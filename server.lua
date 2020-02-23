@@ -278,8 +278,9 @@ function StartTableThread(i)
 									RemoveEventHandler(eventHandler)
 									
 									if not receivedMove then
-										v.player_in = false
 										DebugPrint("TABLE "..index..": "..v.player.." WAS PUT OUT DUE TO LEAVING")
+										v.player_in = false
+										TriggerClientEvent("BLACKJACK:RetrieveCards", -1, index, v.seat)
 									else
 										if move == "hit" then
 											local card = takeCard(deck)
