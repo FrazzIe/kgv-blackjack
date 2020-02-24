@@ -95,12 +95,12 @@ function FindPlayerIdx(tbl, src)
 end
 
 function GiveMoney(player, money)
-	TriggerEvent("kgv:money:sv_giveMoney", player, math.floor(tonumber(money)))
+	exports["core"].AddPlayerChips(source. bet) -- Add cash
 	-- DebugPrint("MONEY: GIVE "..GetPlayerName(player):upper().." "..money)
 end
 
 function TakeMoney(player, money)
-	TriggerEvent("kgv:money:sv_takeMoney", player, math.floor(tonumber(money)))
+	exports["core"].RemovePlayerChips(player, money)
 	-- DebugPrint("MONEY: TAKE "..GetPlayerName(player):upper().." "..money)
 end
 
