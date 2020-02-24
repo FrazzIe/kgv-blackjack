@@ -153,6 +153,22 @@ end
 RegisterServerEvent("BLACKJACK:SetPlayerBet")
 AddEventHandler('BLACKJACK:SetPlayerBet', SetPlayerBet)
 
+function CheckPlayerBet(bet)
+	local playerChips = exports["core"].GetPlayerChips(source) -- Get money
+	local canBet = false
+
+	if playerChips ~= nil then
+		if playerChips >= bet then
+			canBet = true
+		end
+	end
+
+	TriggerClientEvent("BLACKJACK:BetReceived", source, canBet)
+end
+
+RegisterServerEvent("BLACKJACK:CheckPlayerBet")
+AddEventHandler("BLACKJACK:CheckPlayerBet", CheckPlayerBet)
+
 RegisterServerEvent("BLACKJACK:ReceivedMove")
 
 function StartTableThread(i)

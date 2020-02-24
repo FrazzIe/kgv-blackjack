@@ -437,6 +437,8 @@ AddEventHandler("BLACKJACK:PlaceBetChip", function(index, seat, bet, double, spl
 	end)
 end)
 
+RegisterNetEvent("BLACKJACK:BetReceived")
+
 RegisterNetEvent("BLACKJACK:RequestBets")
 AddEventHandler("BLACKJACK:RequestBets", function(index)
 	Citizen.CreateThread(function()
@@ -497,10 +499,23 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 		
 			if IsControlJustPressed(1, 201) then
 				
-				local exists, money = StatGetInt("MP0_WALLET_BALANCE")
+				TriggerServerEvent("BLACKJACK:CheckPlayerBet", bet)
+
+				local betCheckRecieved = false
+				local canBet = false
+				local eventHandler = AddEventHandler("BLACKJACK:BetReceived", function(_canBet)
+					betCheckRecieved = true
+					canBet = _canBet
+				end)
 				
-				if bet <= money then
+				repeat Wait(0) until betCheckRecieved == true
+
+				RemoveEventHandler(eventHandler)
+
+				if canBet then
 					renderScaleform = false
+
+
 					if selectedBet < 27 then
 						local anim = "place_bet_small"
 					
