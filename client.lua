@@ -1,5 +1,6 @@
 seatSideAngle = 30
 bet = 0
+hand = {}
 
 function DisplayHelpText(helpText, time)
 	BeginTextCommandDisplayHelp("STRING")
@@ -137,9 +138,9 @@ end)
 
 renderScaleform = false
 renderBet = false
+renderHand = false
 
 Citizen.CreateThread(function()
-
     scaleform = RequestScaleformMovie_2("INSTRUCTIONAL_BUTTONS")
 
     repeat Wait(0) until HasScaleformMovieLoaded(scaleform)
@@ -156,7 +157,14 @@ Citizen.CreateThread(function()
 			DrawAdvancedNativeText(0.991, 0.935, 0.005, 0.0028, 0.29, "BET:", 255, 255, 255, 255, 0, 0)
 			DrawAdvancedNativeText(1.041, 0.928, 0.005, 0.0028, 0.464, tostring(bet), 255, 255, 255, 255, 0, 0)		
 		end
-	
+
+		if renderHand == true then
+			-- Credits to @github.com/rubbertoe98 for this
+			DrawRect(0.9555, 0.928, 0.06, 0.032, 0, 0, 0, 150) 
+			DrawAdvancedNativeText(1.0375, 0.935, 0.005, 0.0028, 0.29, "HAND:", 255, 255, 255, 255, 0, 0)
+			DrawAdvancedNativeText(1.0655, 0.928, 0.005, 0.0028, 0.464, tostring(handValue(hand)), 255, 255, 255, 255, 0, 0)		
+		end
+
 		if _DEBUG == true then
 		
 			-- for i,p in pairs(cardSplitOffsets) do
@@ -646,6 +654,7 @@ RegisterNetEvent("BLACKJACK:RequestMove")
 AddEventHandler("BLACKJACK:RequestMove", function()
 	Citizen.CreateThread(function()
 		renderScaleform = true
+		renderHand = true
 		while true do Wait(0)
 		
 			BeginScaleformMovieMethod(scaleform, "CLEAR_ALL")
@@ -692,8 +701,6 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				EndScaleformMovieMethod()
 			end
 			
-			DisplayHelpText("YOUR HAND:\n"..handValue(hand))
-			
 			BeginScaleformMovieMethod(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
 			EndScaleformMovieMethod()
 		
@@ -701,7 +708,8 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				TriggerServerEvent("BLACKJACK:ReceivedMove", "hit")
 				
 				renderScaleform = false
-				
+				renderHand = false
+
 				local anim = requestCardAnims[math.random(1,#requestCardAnims)]
 				
 				playerBusy = true
@@ -725,7 +733,8 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				TriggerServerEvent("BLACKJACK:ReceivedMove", "stand")
 				
 				renderScaleform = false
-				
+				renderHand = false
+
 				local anim = declineCardAnims[math.random(1,#declineCardAnims)]
 				
 				playerBusy = true
@@ -763,7 +772,8 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 					TriggerServerEvent("BLACKJACK:ReceivedMove", "double")
 					
 					renderScaleform = false
-					
+					renderHand = false
+
 					local anim = "place_bet_double_down"
 					
 					playerBusy = true
@@ -808,7 +818,8 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 					TriggerServerEvent("BLACKJACK:ReceivedMove", "split")
 					
 					renderScaleform = false
-					
+					renderHand = false
+
 					local anim = "place_bet_small_split"
 					
 					if selectedBet > 27 then
