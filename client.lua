@@ -93,9 +93,9 @@ function getChipPropFromAmount(amount)
             props[k] = chipsFromAmount[v] 
         end
         return props
-    elseif amount < 5000000 then  
+    elseif amount <= 5000000 then  
         return {"vw_prop_vw_chips_pile_01a"}
-    elseif amount < 10000000 then  
+    elseif amount <= 10000000 then  
         return {"vw_prop_vw_chips_pile_02a"}
     else
         return {"vw_prop_vw_chips_pile_03a"}
@@ -512,22 +512,23 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 			BeginScaleformMovieMethod(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
 			EndScaleformMovieMethod()
 			
+			local tableType = (tables[scrollerIndex].highStakes == true) and 2 or 1
+
 			if IsControlJustPressed(1, 192) then
-				selectedBet = #bettingNums
+				selectedBet = #bettingNums[tableType]
 			elseif IsControlJustPressed(1, 175) then -- RIGHT
 				selectedBet = selectedBet + 1
-				if selectedBet > #bettingNums then selectedBet = 1 end
+				if selectedBet > #bettingNums[tableType] then selectedBet = 1 end
 			elseif IsControlJustPressed(1, 174) then -- LEFT
 				selectedBet = selectedBet - 1
-				if selectedBet < 1 then selectedBet = #bettingNums end
+				if selectedBet < 1 then selectedBet = #bettingNums[tableType] end
 			elseif IsControlJustPressed(1, 51) then
 				leavingBlackjack = true
 				renderScaleform = false
 				return
 			end
 			
-			bet = bettingNums[selectedBet] or 34404
-			if tables[scrollerIndex].highStakes == true then bet = bet * 10 end
+			bet = bettingNums[tableType][selectedBet] or 10000
 			
 			DisplayHelpText("CURRENT BET:\n"..bet, -1)
 		
