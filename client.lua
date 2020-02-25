@@ -299,7 +299,7 @@ Citizen.CreateThread(function()
 	
 		local tableObj = CreateObjectNoOffset(model, v.coords.x, v.coords.y, v.coords.z, false, false, false)
 		SetEntityRotation(tableObj, 0.0, 0.0, v.coords.w, 2, 1)
-		SetObjectTextureVariant(tableObj, 3)
+		SetObjectTextureVariant(tableObj, v.color or 3)
 		table.insert(spawnedObjects, tableObj)
 	end
 	

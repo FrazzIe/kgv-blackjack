@@ -26,15 +26,25 @@ tables = {
 	},
 }
 
+--[[
+	Table colors
+	0: Green
+	1: Red
+	2: Blue
+	3: Purple
+--]]
+
 customTables = {
-	{
-		coords = vector4(-287.6049, -956.4222, 85.2936, 69.5003),
-		highStakes = false
-	},
-	{
-		coords = vector4(-75.35, -819.15, 325.1436, 0.0),
-		highStakes = true
-	},
+    {
+        coords = vector4(152.11915588379,-981.68530273438,29.091926574707,292.24224853516),
+		highStakes = false,
+		color = 0,
+    },
+    {
+        coords = vector4(150.28746032715,-976.88409423828,29.091924667358,286.94821166992),
+		highStakes = true,
+		color = 3,
+    },
 }
 
 for i,v in pairs(customTables) do
