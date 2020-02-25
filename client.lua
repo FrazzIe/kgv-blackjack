@@ -569,6 +569,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 			elseif IsControlJustPressed(1, 51) then
 				leavingBlackjack = true
 				renderScaleform = false
+				renderBet = false
 				return
 			end
 			
