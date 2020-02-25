@@ -1,4 +1,5 @@
 seatSideAngle = 30
+bet = 0
 
 function DisplayHelpText(helpText, time)
 	BeginTextCommandDisplayHelp("STRING")
@@ -103,6 +104,17 @@ function getChipPropFromAmount(amount)
     return {"vw_prop_chip_500dollar_st"}
 end
 
+-- Credits to @github.com/rubbertoe98 for this func
+function DrawAdvancedNativeText(x,y,w,h,sc, text, r,g,b,a,font,jus)
+    SetTextFont(font)
+    SetTextScale(sc, sc)
+	N_0x4e096588b13ffeca(jus)
+    SetTextColour(254, 254, 254, 255)
+    SetTextEntry("STRING")
+    AddTextComponentString(text)
+	DrawText(x - 0.1+w, y - 0.02+h)
+end
+
 RegisterCommand("bet", function(source, args, rawCommand)
 	if args[1] and _DEBUG == true then
 		TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, args[1])
@@ -124,6 +136,7 @@ AddEventHandler("onResourceStop", function(r)
 end)
 
 renderScaleform = false
+renderBet = false
 
 Citizen.CreateThread(function()
 
@@ -135,6 +148,13 @@ Citizen.CreateThread(function()
 	
 		if renderScaleform == true then
 			DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
+		end
+
+		if renderBet == true then
+			-- Credits to @github.com/rubbertoe98 for this
+			DrawRect(0.933, 0.928, 0.105, 0.032, 0, 0, 0, 150) 
+			DrawAdvancedNativeText(0.991, 0.935, 0.005, 0.0028, 0.29, "BET:", 255, 255, 255, 255, 0, 0)
+			DrawAdvancedNativeText(1.041, 0.928, 0.005, 0.0028, 0.464, tostring(bet), 255, 255, 255, 255, 0, 0)		
 		end
 	
 		if _DEBUG == true then
@@ -478,6 +498,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 	Citizen.CreateThread(function()
 		scrollerIndex = index
 		renderScaleform = true
+		renderBet = true
 		while true do Wait(0)
 
 			PushScaleformMovieFunction(scaleform, "CLEAR_ALL")
@@ -545,8 +566,6 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 			
 			bet = bettingNums[tableType][selectedBet] or 10000
 			
-			DisplayHelpText("CURRENT BET:\n"..bet, -1)
-		
 			if IsControlJustPressed(1, 201) then
 				
 				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
@@ -564,7 +583,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 
 				if canBet then
 					renderScaleform = false
-
+					renderBet = false
 
 					if selectedBet < 27 then
 						local anim = "place_bet_small"
