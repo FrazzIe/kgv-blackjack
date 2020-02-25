@@ -74,6 +74,35 @@ function CanSplitHand(hand)
 	return _DEBUG
 end
 
+-- Credits to @github.com/rubbertoe98 for this func
+function getChipPropFromAmount(amount)
+    amount = tonumber(amount)
+    if amount < 1000000 then 
+        local denominations = {10,50,100,500,1000,5000,10000}  
+        local props = {} 
+		local max = 7
+		
+		for i = 1, #denominations do
+			while amount >= denominations[max] do 
+                table.insert(props,denominations[max])
+                amount = amount - denominations[max]
+            end
+            max = max - 1
+		end
+        for k,v in ipairs(props) do 
+            props[k] = chipsFromAmount[v] 
+        end
+        return props
+    elseif amount < 5000000 then  
+        return {"vw_prop_vw_chips_pile_01a"}
+    elseif amount < 10000000 then  
+        return {"vw_prop_vw_chips_pile_02a"}
+    else
+        return {"vw_prop_vw_chips_pile_03a"}
+    end
+    return {"vw_prop_chip_500dollar_st"}
+end
+
 RegisterCommand("bet", function(source, args, rawCommand)
 	if args[1] and _DEBUG == true then
 		TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, args[1])
@@ -408,31 +437,36 @@ selectedBet = 1
 RegisterNetEvent("BLACKJACK:PlaceBetChip")
 AddEventHandler("BLACKJACK:PlaceBetChip", function(index, seat, bet, double, split)
 	Citizen.CreateThread(function()
-	
-		local model = GetHashKey(chipModels2[bet])
+		local props = getChipPropFromAmount(bet)
+		local chipGap = 0.0
+		for i = 1, #props do
+			local model = GetHashKey(props[i])
+			
+			DebugPrint(bet)
+			DebugPrint(seat)
+			DebugPrint(tostring(props[i]))
+			DebugPrint(tostring(chipOffsets[seat]))
 		
-		DebugPrint(bet)
-		DebugPrint(seat)
-		DebugPrint(tostring(chipModels2[bet]))
-		DebugPrint(tostring(chipOffsets[seat]))
-	
-		RequestModel(model)
-		repeat Wait(0) until HasModelLoaded(model)
-	
-		local location = 1
-		if double == true then location = 2 end
-		
-		local chip = CreateObjectNoOffset(model, tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, false, false, false)
-		
-		table.insert(spawnedObjects, chip)
-		table.insert(chips[index][seat], chip)
-		
-		if split == false then
-			SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipOffsets[seat][location].x, chipOffsets[seat][location].y, chipHeights[1]))
-			SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipRotationOffsets[seat][2].z)
-		else
-			SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipSplitOffsets[seat][2].x, chipSplitOffsets[seat][2].y, chipHeights[1]))
-			SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipSplitRotationOffsets[seat][1].z)
+			RequestModel(model)
+			repeat Wait(0) until HasModelLoaded(model)
+
+			local location = 1
+			if double == true then location = 2 end
+			
+			local chip = CreateObjectNoOffset(model, tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, false, false, false)
+			
+			table.insert(spawnedObjects, chip)
+			table.insert(chips[index][seat], chip)
+			
+			if split == false then
+				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipOffsets[seat][location].x, chipOffsets[seat][location].y, chipHeights[1] + chipGap))
+				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipRotationOffsets[seat][2].z)
+			else
+				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipSplitOffsets[seat][2].x, chipSplitOffsets[seat][2].y, chipHeights[1] + chipGap))
+				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipSplitRotationOffsets[seat][1].z)
+			end
+			
+			chipGap = chipGap + (chipThickness[props[i]] ~= nil and chipThickness[props[i]] or 0.0)
 		end
 	end)
 end)
@@ -499,7 +533,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 		
 			if IsControlJustPressed(1, 201) then
 				
-				TriggerServerEvent("BLACKJACK:CheckPlayerBet", bet)
+				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
 
 				local betCheckRecieved = false
 				local canBet = false
@@ -526,7 +560,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 						
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
-						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false)
+						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false)
 
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
@@ -549,7 +583,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 						
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
-						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false)
+						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false)
 
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						

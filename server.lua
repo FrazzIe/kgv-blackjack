@@ -130,7 +130,7 @@ function PlayDealerSpeech(dealer, speech)
 	TriggerClientEvent("BLACKJACK:PlayDealerSpeech", -1, dealer, speech)
 end
 
-function SetPlayerBet(i, seat, bet, betId, double, split)
+function SetPlayerBet(i, seat, bet, double, split)
 	split = split or false
 	double = double or false
 
@@ -144,7 +144,7 @@ function SetPlayerBet(i, seat, bet, betId, double, split)
 			players[i][num].bet = tonumber(bet)			
 		end
 		
-		TriggerClientEvent("BLACKJACK:PlaceBetChip", -1, i, 5-seat, betId, double, split)
+		TriggerClientEvent("BLACKJACK:PlaceBetChip", -1, i, 5-seat, bet, double, split)
 	else
 		DebugPrint("TABLE "..i..": PLAYER "..source.." ATTEMPTED BET BUT NO LONGER TRACKED?")
 	end
