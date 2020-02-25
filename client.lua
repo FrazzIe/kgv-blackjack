@@ -479,38 +479,53 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 		scrollerIndex = index
 		renderScaleform = true
 		while true do Wait(0)
-			BeginScaleformMovieMethod(scaleform, "SET_DATA_SLOT")
-			ScaleformMovieMethodAddParamInt(0)
-			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 175, 0))
-			ScaleformMovieMethodAddParamPlayerNameString("")
-			EndScaleformMovieMethod()
+
+			PushScaleformMovieFunction(scaleform, "CLEAR_ALL")
+			PopScaleformMovieFunctionVoid()
 			
-			BeginScaleformMovieMethod(scaleform, "SET_DATA_SLOT")
-			ScaleformMovieMethodAddParamInt(1)
-			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 174, 0))
-			ScaleformMovieMethodAddParamPlayerNameString("Change Bet")
-			EndScaleformMovieMethod()
+			PushScaleformMovieFunction(scaleform, "SET_CLEAR_SPACE")
+			PushScaleformMovieFunctionParameterInt(200)
+			PopScaleformMovieFunctionVoid()
 		
-			BeginScaleformMovieMethod(scaleform, "SET_DATA_SLOT")
-			ScaleformMovieMethodAddParamInt(2)
+			PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
+			PushScaleformMovieFunctionParameterInt(0)
 			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 201, 0))
-			ScaleformMovieMethodAddParamPlayerNameString("Bet")
-			EndScaleformMovieMethod()
-		
-			BeginScaleformMovieMethod(scaleform, "SET_DATA_SLOT")
-			ScaleformMovieMethodAddParamInt(3)
-			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 192, 0))
-			ScaleformMovieMethodAddParamPlayerNameString("Max Bet")
-			EndScaleformMovieMethod()
-		
+			ScaleformMovieMethodAddParamPlayerNameString("Place bet") -- ENTER
+			PopScaleformMovieFunctionVoid()
+
+			PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
+			PushScaleformMovieFunctionParameterInt(1)
+			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 51, 0)) -- The button to display
+			ScaleformMovieMethodAddParamPlayerNameString("Leave table") -- E
+			PopScaleformMovieFunctionVoid()
+
+			PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
+			PushScaleformMovieFunctionParameterInt(2)
+			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 175, 0))
+			ScaleformMovieMethodAddParamPlayerNameString("Increase bet") -- RIGHT ARROW
+			PopScaleformMovieFunctionVoid()
+
+			PushScaleformMovieFunction(scaleform, "SET_DATA_SLOT")
+			PushScaleformMovieFunctionParameterInt(3)
+			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 174, 0))
+			ScaleformMovieMethodAddParamPlayerNameString("Lower bet") -- LEFT ARROW
+			PopScaleformMovieFunctionVoid()		
+	
 			BeginScaleformMovieMethod(scaleform, "SET_DATA_SLOT")
 			ScaleformMovieMethodAddParamInt(4)
-			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 51, 0))
-			ScaleformMovieMethodAddParamPlayerNameString("Quit")
+			ScaleformMovieMethodAddParamPlayerNameString(GetControlInstructionalButton(1, 192, 0))
+			ScaleformMovieMethodAddParamPlayerNameString("Max Bet") -- TAB
 			EndScaleformMovieMethod()
-			
-			BeginScaleformMovieMethod(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
-			EndScaleformMovieMethod()
+		
+			PushScaleformMovieFunction(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
+			PopScaleformMovieFunctionVoid()
+		
+			PushScaleformMovieFunction(scaleform, "SET_BACKGROUND_COLOUR")
+			PushScaleformMovieFunctionParameterInt(0)
+			PushScaleformMovieFunctionParameterInt(0)
+			PushScaleformMovieFunctionParameterInt(0)
+			PushScaleformMovieFunctionParameterInt(80)
+			PopScaleformMovieFunctionVoid()
 			
 			local tableType = (tables[scrollerIndex].highStakes == true) and 2 or 1
 
