@@ -746,64 +746,98 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				return
 			end
 			if IsControlJustPressed(1, 192) and #hand == 2 then
-				TriggerServerEvent("BLACKJACK:ReceivedMove", "double")
-				
-				renderScaleform = false
-				
-				local anim = "place_bet_double_down"
-				
-				playerBusy = true
-				local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, false, 1065353216, 0, 1065353216)
-				NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@blackjack@player", anim, 2.0, -2.0, 13, 16, 1148846080, 0)
-				NetworkStartSynchronisedScene(scene)
-				Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
-				
-				TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, true)
-				
-				Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
-				playerBusy = false
-				
-				local idleVar = "idle_var_0"..math.random(1,5)
-				
-				DebugPrint("IDLING POST-BUSY: "..idleVar)
+				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
 
-				local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, true, 1065353216, 0, 1065353216)
-				NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@shared@player@", idleVar, 2.0, -2.0, 13, 16, 1148846080, 0)
-				NetworkStartSynchronisedScene(scene)
+				local betCheckRecieved = false
+				local canBet = false
+				local eventHandler = AddEventHandler("BLACKJACK:BetReceived", function(_canBet)
+					betCheckRecieved = true
+					canBet = _canBet
+				end)
+				
+				repeat Wait(0) until betCheckRecieved == true
 
-				return
+				RemoveEventHandler(eventHandler)
+
+				if canBet then
+					TriggerServerEvent("BLACKJACK:ReceivedMove", "double")
+					
+					renderScaleform = false
+					
+					local anim = "place_bet_double_down"
+					
+					playerBusy = true
+					local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, false, 1065353216, 0, 1065353216)
+					NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@blackjack@player", anim, 2.0, -2.0, 13, 16, 1148846080, 0)
+					NetworkStartSynchronisedScene(scene)
+					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
+					
+					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, true)
+					
+					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
+					playerBusy = false
+					
+					local idleVar = "idle_var_0"..math.random(1,5)
+					
+					DebugPrint("IDLING POST-BUSY: "..idleVar)
+
+					local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, true, 1065353216, 0, 1065353216)
+					NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@shared@player@", idleVar, 2.0, -2.0, 13, 16, 1148846080, 0)
+					NetworkStartSynchronisedScene(scene)
+
+					return
+				else
+					SetSubtitle("~r~You don't have enough money to double down.", 5000)
+				end
 			end
 			if IsControlJustPressed(1, 209) and CanSplitHand(hand) == true then
-				TriggerServerEvent("BLACKJACK:ReceivedMove", "split")
+				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
+
+				local betCheckRecieved = false
+				local canBet = false
+				local eventHandler = AddEventHandler("BLACKJACK:BetReceived", function(_canBet)
+					betCheckRecieved = true
+					canBet = _canBet
+				end)
 				
-				renderScaleform = false
-				
-				local anim = "place_bet_small_split"
-				
-				if selectedBet > 27 then
-					anim = "place_bet_large_split"
+				repeat Wait(0) until betCheckRecieved == true
+
+				RemoveEventHandler(eventHandler)
+
+				if canBet then
+					TriggerServerEvent("BLACKJACK:ReceivedMove", "split")
+					
+					renderScaleform = false
+					
+					local anim = "place_bet_small_split"
+					
+					if selectedBet > 27 then
+						anim = "place_bet_large_split"
+					end
+					
+					playerBusy = true
+					local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, false, 1065353216, 0, 1065353216)
+					NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@blackjack@player", anim, 2.0, -2.0, 13, 16, 1148846080, 0)
+					NetworkStartSynchronisedScene(scene)
+					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
+					
+					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false, true)
+					
+					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
+					playerBusy = false
+					
+					local idleVar = "idle_var_0"..math.random(1,5)
+					
+					DebugPrint("IDLING POST-BUSY: "..idleVar)
+
+					local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, true, 1065353216, 0, 1065353216)
+					NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@shared@player@", idleVar, 2.0, -2.0, 13, 16, 1148846080, 0)
+					NetworkStartSynchronisedScene(scene)
+
+					return
+				else
+					SetSubtitle("~r~You don't have enough money to split.", 5000)
 				end
-				
-				playerBusy = true
-				local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, false, 1065353216, 0, 1065353216)
-				NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@blackjack@player", anim, 2.0, -2.0, 13, 16, 1148846080, 0)
-				NetworkStartSynchronisedScene(scene)
-				Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
-				
-				TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false, true)
-				
-				Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
-				playerBusy = false
-				
-				local idleVar = "idle_var_0"..math.random(1,5)
-				
-				DebugPrint("IDLING POST-BUSY: "..idleVar)
-
-				local scene = NetworkCreateSynchronisedScene(g_coords, g_rot, 2, true, true, 1065353216, 0, 1065353216)
-				NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, "anim_casino_b@amb@casino@games@shared@player@", idleVar, 2.0, -2.0, 13, 16, 1148846080, 0)
-				NetworkStartSynchronisedScene(scene)
-
-				return
 			end
 			
 			-- not yet
