@@ -95,12 +95,12 @@ function FindPlayerIdx(tbl, src)
 end
 
 function GiveMoney(player, money)
-	exports["core"].AddPlayerChips(source. bet) -- Add cash
+	exports["core"]:AddPlayerChips(player, money) -- Add cash
 	-- DebugPrint("MONEY: GIVE "..GetPlayerName(player):upper().." "..money)
 end
 
 function TakeMoney(player, money)
-	exports["core"].RemovePlayerChips(player, money)
+	exports["core"]:RemovePlayerChips(player, money)
 	-- DebugPrint("MONEY: TAKE "..GetPlayerName(player):upper().." "..money)
 end
 
@@ -153,8 +153,10 @@ end
 RegisterServerEvent("BLACKJACK:SetPlayerBet")
 AddEventHandler('BLACKJACK:SetPlayerBet', SetPlayerBet)
 
-function CheckPlayerBet(bet)
-	local playerChips = exports["core"].GetPlayerChips(source) -- Get money
+function CheckPlayerBet(i, bet)
+	DebugPrint("TABLE "..i..": CHECKING "..GetPlayerName(source):upper().."'s CHIPS")
+
+	local playerChips = exports["core"]:GetPlayerChips(source) -- Get money
 	local canBet = false
 
 	if playerChips ~= nil then
