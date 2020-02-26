@@ -1,5 +1,5 @@
 
-_DEBUG = true
+_DEBUG = false
 
 function DebugPrint(str)
 	if _DEBUG == true and str then
