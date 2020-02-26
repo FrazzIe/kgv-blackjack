@@ -288,7 +288,6 @@ chipSplitOffsets = {
 	}
 }
 
-
 chipSplitRotationOffsets = { -- doesnt have to be vector3
 	[1] = {
 		vector3(0, 0, -16.56),
@@ -349,6 +348,35 @@ chipOffsets = {
 	}
 }
 
+pileOffsets = {
+	[1] = {
+		vector3(0.61, -0.02, 0.0),
+		vector3(0.73, 0.47, 0.0),
+		vector3(0.756775, 0.292775, 0.0),
+		vector3(0.701875, 0.3439, 0.0),
+	},
+	
+	[2] = {
+		vector3(0.03, -0.29, 0.0),
+		vector3(0.05, -0.06, 0.0),
+		vector3(0.397775, -0.208525, 0.0),
+		vector3(0.39715, -0.1354, 0.0),
+	},
+	
+	[3] = {
+		vector3(-0.48, -0.13, 0.0),
+		vector3(-0.35, 0.07, 0.0),
+		vector3(-0.186575, -0.2861, 0.0),
+		vector3(-0.141675, -0.237925, 0.0),
+	},
+	
+	[4] = {
+		vector3(-0.7, 0.32, 0.0),
+		vector3(-0.7, 0.53, 0.0),
+		vector3(-0.6783, 0.0744, 0.0),
+		vector3(-0.604425, 0.082575, 0.0),
+	}
+}
 
 chipRotationOffsets = { -- doesnt have to be vector3
 	[1] = {
@@ -367,7 +395,7 @@ chipRotationOffsets = { -- doesnt have to be vector3
 	
 	[3] = {
 		vector3(0, 0, -18.36),
-		vector3(0, 0, -18.72),
+		vector3(0, 0, -90.72),
 		vector3(0, 0, -15.48),
 		vector3(0, 0, -18.0),
 	},
@@ -380,116 +408,159 @@ chipRotationOffsets = { -- doesnt have to be vector3
 	}
 }
 
-bettingNums = {
-	{ -- Normal Tables
-		10,
-		20,
-		30,
-		40,
-		50,
-		60,
-		70,
-		80,
-		90,
-		100,
-		150,
-		200,
-		250,
-		300,
-		350,
-		400,
-		450,
-		500,
-		1000,
-		1500,
-		2000,
-		2500,
-		3000,
-		3500,
-		4000,
-		4500,
-		5000,
-		6000,
-		7000,
-		8000,
-		9000,
-		10000,
-		15000,
-		20000,
-		25000,
-		30000,
-		35000,
-		40000,
-		45000,
-		50000,
+pileRotationOffsets = { -- doesnt have to be vector3
+	[1] = {
+		vector3(0, 0, 8.1),
+		vector3(0, 0, 229.49),
+		vector3(0, 0, 74.52),
+		vector3(0, 0, 72.0),
 	},
-	{ -- High stakes
-		100,
-		200,
-		300,
-		400,
-		500,
-		600,
-		700,
-		800,
-		900,
-		1000,
-		1500,
-		2000,
-		2500,
-		3000,
-		3500,
-		4000,
-		4500,
-		5000,
-		10000,
-		15000,
-		20000,
-		25000,
-		30000,
-		35000,
-		40000,
-		45000,
-		50000,
-		60000,
-		70000,
-		80000,
-		90000,
-		100000,
-		150000,
-		200000,
-		250000,
-		300000,
-		350000,
-		400000,
-		450000,
-		500000,
-		1000000,
-		5000000,
-		10000000,
-		50000000,
+	
+	[2] = {
+		vector3(0, 0, 78.7),
+		vector3(0, 0, 4.6),
+		vector3(0, 0, 32.04),
+		vector3(0, 0, 32.04),
+	},
+	
+	[3] = {
+		vector3(0, 0, 44.89),
+		vector3(0, 0, 144.49),
+		vector3(0, 0, -15.48),
+		vector3(0, 0, -18.0),
+	},
+	
+	[4] = {
+		vector3(0, 0, 15.6),
+		vector3(0, 0, 15.6),
+		vector3(0, 0, -57.6),
+		vector3(0, 0, -64.8),
 	}
 }
-chipsFromAmount = {
-    [1] = "vw_prop_vw_coin_01a",
-    [10] = "vw_prop_chip_10dollar_x1",
-    [50] = "vw_prop_chip_50dollar_x1",
-    [100] = "vw_prop_chip_100dollar_x1",
-    [500] = "vw_prop_chip_500dollar_x1",
-    [1000] = "vw_prop_chip_1kdollar_x1",
-    [5000] = "vw_prop_plaq_5kdollar_x1",
-    [10000] = "vw_prop_plaq_10kdollar_x1",
+
+lowTableLimit = 40
+bettingNums = {
+	10,
+	20,
+	30,
+	40,
+	50,
+	60,
+	70,
+	80,
+	90,
+	100,
+	150,
+	200,
+	250,
+	300,
+	350,
+	400,
+	450,
+	500,
+	1000,
+	1500,
+	2000,
+	2500,
+	3000,
+	3500,
+	4000,
+	4500,
+	5000,
+	6000,
+	7000,
+	8000,
+	9000,
+	10000,
+	15000,
+	20000,
+	25000,
+	30000,
+	35000,
+	40000,
+	45000,
+	50000, -- 40 Low table limit
+	100000, -- High stakes only
+	1000000,
+}
+
+--[[
+	case 10:
+		return joaat("vw_prop_chip_10dollar_x1");
+	case 50:
+		return joaat("vw_prop_chip_50dollar_x1");
+	case 100:
+		return joaat("vw_prop_chip_100dollar_x1");
+	case 500:
+		return joaat("vw_prop_chip_500dollar_x1");
+	case 1000:
+		return joaat("vw_prop_chip_1kdollar_x1");
+	case 5000:
+		return joaat("vw_prop_plaq_5kdollar_x1");
+	case 10000:
+		return joaat("vw_prop_plaq_10kdollar_x1");
+
+		vw_prop_chip_10kdollar_x1.ydr
+		vw_prop_chip_5kdollar_x1.ydr
+		vw_prop_chip_10kdollar_st.ydr -- $120,000
+		vw_prop_chip_5kdollar_st.ydr -- $60,000
+		vw_prop_vw_chips_pile_01a.ydr -- $511,000
+		vw_prop_vw_chips_pile_02a.ydr -- $3,250,000
+		vw_prop_vw_chips_pile_03a.ydr -- $1,990,000
+
+--]]
+
+chipModels = {
+	[10] = "vw_prop_chip_10dollar_x1",
+	[50] = "vw_prop_chip_50dollar_x1",
+	[100] = "vw_prop_chip_100dollar_x1",
+	[120] = "vw_prop_chip_10dollar_st",
+	[500] = "vw_prop_chip_500dollar_x1",
+	[600] = "vw_prop_chip_50dollar_st",
+	[1000] = "vw_prop_chip_1kdollar_x1",
+	[1200] = "vw_prop_chip_100dollar_st",
+	[5000] = "vw_prop_chip_5kdollar_x1",
+	[6000] = "vw_prop_chip_500dollar_st",
+	[10000] = "vw_prop_chip_10kdollar_x1",
+	[60000] = "vw_prop_chip_5kdollar_st",
+	[120000] = "vw_prop_chip_10kdollar_st",
+}
+
+chipValues = {
+	10,
+	50,
+	100,
+	120,
+	500,
+	600,
+	1000,
+	1200,
+	5000,
+	6000,
+	10000,
+	60000,
+	120000,
 }
 
 chipThickness = {
-	["vw_prop_vw_coin_01a"] = 0.0025850001256913,
-	["vw_prop_chip_10dollar_x1"] = 0.0054170000366867,
-	["vw_prop_chip_50dollar_x1"] = 0.0056730001233518,
-	["vw_prop_chip_100dollar_x1"] = 0.0056900000199676,
-	["vw_prop_chip_500dollar_x1"] = 0.0057030003517866,
-	["vw_prop_chip_1kdollar_x1"] = 0.0056910002604127,
-	["vw_prop_plaq_5kdollar_x1"] = 0.006891000084579,
-	["vw_prop_plaq_10kdollar_x1"] = 0.0057889996096492,
+	[`vw_prop_chip_10dollar_x1`] = 0.0054170000366867,
+	[`vw_prop_chip_50dollar_x1`] = 0.0056730001233518,
+	[`vw_prop_chip_100dollar_x1`] = 0.0056900000199676,
+	[`vw_prop_chip_10dollar_st`] = 0.061421997845173,
+	[`vw_prop_chip_500dollar_x1`] = 0.0057030003517866,
+	[`vw_prop_chip_50dollar_st`] = 0.061151999980211,
+	[`vw_prop_chip_1kdollar_x1`] = 0.0056910002604127,
+	[`vw_prop_chip_100dollar_st`] = 0.060908999294043,
+	[`vw_prop_chip_500dollar_st`] = 0.060989998281002,
+
+	[`vw_prop_chip_5kdollar_x1`] = 0.005538,
+	[`vw_prop_chip_10kdollar_x1`] = 0.005562,
+	[`vw_prop_chip_5kdollar_st`] = 0.061049,
+	[`vw_prop_chip_10kdollar_st`] = 0.06095,	
+	[`vw_prop_plaq_5kdollar_x1`] = 0.006891000084579,
+	[`vw_prop_plaq_10kdollar_x1`] = 0.0057889996096492,
+	[`vw_prop_plaq_5kdollar_st`] = 0.060949999839067,
+	[`vw_prop_plaq_10kdollar_st`] = 0.060749001801014,
 }
 
 chipHeights = {

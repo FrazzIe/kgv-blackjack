@@ -1,6 +1,14 @@
 seatSideAngle = 30
-bet = 0
-hand = {}
+
+function DrawAdvancedNativeText(x,y,w,h,sc, text, r,g,b,a,font,jus)
+    SetTextFont(font)
+    SetTextScale(sc, sc)
+	N_0x4e096588b13ffeca(jus)
+    SetTextColour(254, 254, 254, 255)
+    SetTextEntry("STRING")
+    AddTextComponentString(text)
+	DrawText(x - 0.1+w, y - 0.02+h)
+end
 
 function DisplayHelpText(helpText, time)
 	BeginTextCommandDisplayHelp("STRING")
@@ -76,44 +84,50 @@ function CanSplitHand(hand)
 	return _DEBUG
 end
 
--- Credits to @github.com/rubbertoe98 for this func
-function getChipPropFromAmount(amount)
-    amount = tonumber(amount)
-    if amount < 1000000 then 
-        local denominations = {10,50,100,500,1000,5000,10000}  
-        local props = {} 
-		local max = 7
-		
-		for i = 1, #denominations do
-			while amount >= denominations[max] do 
-                table.insert(props,denominations[max])
-                amount = amount - denominations[max]
-            end
-            max = max - 1
-		end
-        for k,v in ipairs(props) do 
-            props[k] = chipsFromAmount[v] 
-        end
-        return props
-    elseif amount <= 5000000 then  
-        return {"vw_prop_vw_chips_pile_01a"}
-    elseif amount <= 10000000 then  
-        return {"vw_prop_vw_chips_pile_02a"}
-    else
-        return {"vw_prop_vw_chips_pile_03a"}
-    end
-    return {"vw_prop_chip_500dollar_st"}
-end
+--[[
+	vw_prop_vw_chips_pile_01a.ydr -- $511,000
+	vw_prop_vw_chips_pile_02a.ydr -- $3,250,000
+	vw_prop_vw_chips_pile_03a.ydr -- $1,990,000
+--]]
 
--- Credits to @github.com/rubbertoe98 for this func
-function DrawAdvancedNativeText(x,y,w,h,sc, text, r,g,b,a,font,jus)
-    SetTextFont(font)
-    SetTextScale(sc, sc)
-	N_0x4e096588b13ffeca(jus)
-    SetTextColour(254, 254, 254, 255)
-    SetTextEntry("STRING")
-    AddTextComponentString(text)
-	DrawText(x - 0.1+w, y - 0.02+h)
+function getChips(amount)
+	if amount < 500000 then
+		local props = {}
+		local propTypes = {}
+
+		local d = #chipValues
+
+		for i = 1, #chipValues do
+			local iter = #props + 1
+			while amount >= chipValues[d] do
+				local model = chipModels[chipValues[d]]
+
+				if not props[iter] then
+					local propType = string.sub(model, 0, string.len(model) - 3)
+
+					if propTypes[propType] then
+						iter = propTypes[propType]
+					else
+						props[iter] = {}
+						propTypes[propType] = iter
+					end
+				end
+
+				props[iter][#props[iter] + 1] = model
+				amount = amount - chipValues[d]
+			end
+
+			d = d - 1
+		end
+
+		return false, props
+	elseif amount <= 500000 then
+		return true, "vw_prop_vw_chips_pile_01a"
+	elseif amount <= 5000000 then
+		return true, "vw_prop_vw_chips_pile_03a"
+	else
+		return true, "vw_prop_vw_chips_pile_02a"
+	end
 end
 
 RegisterCommand("bet", function(source, args, rawCommand)
@@ -141,6 +155,7 @@ renderBet = false
 renderHand = false
 
 Citizen.CreateThread(function()
+
     scaleform = RequestScaleformMovie_2("INSTRUCTIONAL_BUTTONS")
 
     repeat Wait(0) until HasScaleformMovieLoaded(scaleform)
@@ -164,7 +179,6 @@ Citizen.CreateThread(function()
 			DrawAdvancedNativeText(1.0375, 0.935, 0.005, 0.0028, 0.29, "HAND:", 255, 255, 255, 255, 0, 0)
 			DrawAdvancedNativeText(1.0655, 0.928, 0.005, 0.0028, 0.464, tostring(handValue(hand)), 255, 255, 255, 255, 0, 0)		
 		end
-
 		if _DEBUG == true then
 		
 			-- for i,p in pairs(cardSplitOffsets) do
@@ -462,39 +476,164 @@ end)
 
 selectedBet = 1
 
+--[[
+	--Get chip offsets
+	Citizen.CreateThread(function()
+		local selectedOffset = { x=0.0, y=0.0, z=0.0 }
+		while true do
+			Citizen.Wait(0)
+
+			if selectedTable and selectedChip then
+				if IsControlPressed(1, 108) then -- y-selectedOffset.x, selectedOffset.y
+					selectedOffset.y = selectedOffset.y - 0.01
+				end
+
+				if IsControlPressed(1, 107) then -- y+
+					selectedOffset.y = selectedOffset.y + 0.01
+				end
+
+				if IsControlPressed(1, 111) then -- x-
+					selectedOffset.x = selectedOffset.x - 0.01
+				end
+
+				if IsControlPressed(1, 112) then -- x+
+					selectedOffset.x = selectedOffset.x + 0.01
+				end
+
+				if IsControlPressed(1, 117) then -- rotate left
+					selectedOffset.z = selectedOffset.z - 0.1
+					if selectedOffset.z < 0 then selectedOffset.z = 360.0 end
+				end
+
+				if IsControlPressed(1, 118) then -- rotate right
+					selectedOffset.z = selectedOffset.z + 0.1
+					if selectedOffset.z > 360 then selectedOffset.z = 0.0 end
+				end
+
+				SetEntityCoordsNoOffset(selectedChip, GetObjectOffsetFromCoords(tables[selectedTable].coords.x, tables[selectedTable].coords.y, tables[selectedTable].coords.z, tables[selectedTable].coords.w, selectedOffset.x, selectedOffset.y, chipHeights[1]))
+				SetEntityRotation(selectedChip, 0.0, 0.0, tables[selectedTable].coords.w + selectedOffset.z)
+
+				SetTextScale(0.5, 0.5)
+				SetTextColour(255,255,255,255)
+				SetTextDropShadow(0, 0, 0, 0,255)
+				SetTextEdge(1, 0, 0, 0, 255)
+				SetTextDropShadow()
+				SetTextOutline()
+				SetTextEntry("STRING")
+				AddTextComponentString("~b~"..selectedOffset.x..", "..selectedOffset.y..", "..selectedOffset.z)
+				DrawText(0.3,0.8)
+			end
+		end
+	end)
+--]]
+
 RegisterNetEvent("BLACKJACK:PlaceBetChip")
 AddEventHandler("BLACKJACK:PlaceBetChip", function(index, seat, bet, double, split)
 	Citizen.CreateThread(function()
-		local props = getChipPropFromAmount(bet)
-		local chipGap = 0.0
-		for i = 1, #props do
-			local model = GetHashKey(props[i])
+		local chipPile, props = getChips(bet)
+		
+		if chipPile then
+			local model = GetHashKey(props)
 			
 			DebugPrint(bet)
 			DebugPrint(seat)
-			DebugPrint(tostring(props[i]))
-			DebugPrint(tostring(chipOffsets[seat]))
+			DebugPrint(tostring(props))
+			DebugPrint(tostring(pileOffsets[seat]))
 		
 			RequestModel(model)
 			repeat Wait(0) until HasModelLoaded(model)
-
+			
 			local location = 1
 			if double == true then location = 2 end
 			
 			local chip = CreateObjectNoOffset(model, tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, false, false, false)
-			
+
 			table.insert(spawnedObjects, chip)
 			table.insert(chips[index][seat], chip)
-			
+
 			if split == false then
-				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipOffsets[seat][location].x, chipOffsets[seat][location].y, chipHeights[1] + chipGap))
-				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipRotationOffsets[seat][2].z)
+				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, pileOffsets[seat][location].x, pileOffsets[seat][location].y, chipHeights[1]))
+				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + pileRotationOffsets[seat][3 - location].z)
 			else
-				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipSplitOffsets[seat][2].x, chipSplitOffsets[seat][2].y, chipHeights[1] + chipGap))
-				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipSplitRotationOffsets[seat][1].z)
+				SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, pileOffsets[seat][2].x, pileOffsets[seat][2].y, chipHeights[1]))
+				SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + pileRotationOffsets[seat][3 - location].z)
 			end
+
+			--Get chip offsets
+			--selectedChip = chip
+			--selectedTable = index
+		else
+			local chipXOffset = 0.0
+			local chipYOffset = 0.0
 			
-			chipGap = chipGap + (chipThickness[props[i]] ~= nil and chipThickness[props[i]] or 0.0)
+			for i = 1, #props do
+				local chipGap = 0.0
+
+				for j = 1, #props[i] do
+					local model = GetHashKey(props[i][j])
+					
+					DebugPrint(bet)
+					DebugPrint(seat)
+					DebugPrint(tostring(props[i][j]))
+					DebugPrint(tostring(chipOffsets[seat]))
+				
+					RequestModel(model)
+					repeat Wait(0) until HasModelLoaded(model)
+				
+					local location = 1
+					if double == true then location = 2 end
+					
+					local chip = CreateObjectNoOffset(model, tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, false, false, false)
+					
+					table.insert(spawnedObjects, chip)
+					table.insert(chips[index][seat], chip)
+
+					if split == false then
+						SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipOffsets[seat][location].x + chipXOffset, chipOffsets[seat][location].y + chipYOffset, chipHeights[1] + chipGap))
+						SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipRotationOffsets[seat][2].z)
+					else
+						SetEntityCoordsNoOffset(chip, GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, chipSplitOffsets[seat][2].x + chipXOffset, chipSplitOffsets[seat][2].y + chipYOffset, chipHeights[1] + chipGap))
+						SetEntityRotation(chip, 0.0, 0.0, tables[index].coords.w + chipSplitRotationOffsets[seat][1].z)
+					end
+
+					chipGap = chipGap + ((chipThickness[model] ~= nil) and chipThickness[model] or 0.0)
+				end
+
+				-- Hacky way to setup each seats split chips
+				if seat == 1 then
+					if split == false then
+						chipXOffset = chipXOffset - 0.03
+						chipYOffset = chipYOffset - 0.05
+					else
+						chipXOffset = chipXOffset + 0.03
+						chipYOffset = chipYOffset + 0.05				
+					end
+				elseif seat == 2 then
+					if split == false then
+						chipXOffset = chipXOffset - 0.05
+						chipYOffset = chipYOffset - 0.02
+					else
+						chipXOffset = chipXOffset + 0.05
+						chipYOffset = chipYOffset + 0.02						
+					end
+				elseif seat == 3 then
+					if split == false then
+						chipXOffset = chipXOffset - 0.05
+						chipYOffset = chipYOffset + 0.02
+					else
+						chipXOffset = chipXOffset + 0.05
+						chipYOffset = chipYOffset - 0.02						
+					end
+				elseif seat == 4 then
+					if split == false then
+						chipXOffset = chipXOffset - 0.02
+						chipYOffset = chipYOffset + 0.05
+					else
+						chipXOffset = chipXOffset + 0.02
+						chipYOffset = chipYOffset - 0.05
+					end
+				end
+			end
 		end
 	end)
 end)
@@ -508,7 +647,6 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 		renderScaleform = true
 		renderBet = true
 		while true do Wait(0)
-
 			PushScaleformMovieFunction(scaleform, "CLEAR_ALL")
 			PopScaleformMovieFunctionVoid()
 			
@@ -556,25 +694,32 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 			PushScaleformMovieFunctionParameterInt(80)
 			PopScaleformMovieFunctionVoid()
 			
-			local tableType = (tables[scrollerIndex].highStakes == true) and 2 or 1
+			local tableLimit = (tables[scrollerIndex].highStakes == true) and #bettingNums or lowTableLimit
 
 			if IsControlJustPressed(1, 192) then
-				selectedBet = #bettingNums[tableType]
+				selectedBet = tableLimit
 			elseif IsControlJustPressed(1, 175) then -- RIGHT
 				selectedBet = selectedBet + 1
-				if selectedBet > #bettingNums[tableType] then selectedBet = 1 end
+				if selectedBet > tableLimit then selectedBet = 1 end
 			elseif IsControlJustPressed(1, 174) then -- LEFT
 				selectedBet = selectedBet - 1
-				if selectedBet < 1 then selectedBet = #bettingNums[tableType] end
+				if selectedBet < 1 then selectedBet = tableLimit end
 			elseif IsControlJustPressed(1, 51) then
 				leavingBlackjack = true
 				renderScaleform = false
 				renderBet = false
+				selectedBet = 1
 				return
 			end
 			
-			bet = bettingNums[tableType][selectedBet] or 10000
+			bet = bettingNums[selectedBet] or 10000
 			
+			if tables[scrollerIndex].highStakes == true then
+				bet = bet * 10
+			end
+			
+			DisplayHelpText("CURRENT BET:\n"..bet, -1)
+		
 			if IsControlJustPressed(1, 201) then
 				
 				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
@@ -589,11 +734,10 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 				repeat Wait(0) until betCheckRecieved == true
 
 				RemoveEventHandler(eventHandler)
-
+				
 				if canBet then
 					renderScaleform = false
 					renderBet = false
-
 					if selectedBet < 27 then
 						local anim = "place_bet_small"
 					
@@ -604,7 +748,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 						
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
-						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false)
+						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false)
 
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
@@ -627,7 +771,7 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 						
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
-						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false)
+						TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false)
 
 						Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 						
@@ -702,6 +846,8 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				EndScaleformMovieMethod()
 			end
 			
+			DisplayHelpText("YOUR HAND:\n"..handValue(hand))
+			
 			BeginScaleformMovieMethod(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
 			EndScaleformMovieMethod()
 		
@@ -768,7 +914,7 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				repeat Wait(0) until betCheckRecieved == true
 
 				RemoveEventHandler(eventHandler)
-
+				
 				if canBet then
 					TriggerServerEvent("BLACKJACK:ReceivedMove", "double")
 					
@@ -783,7 +929,7 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 					NetworkStartSynchronisedScene(scene)
 					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 					
-					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, true)
+					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, true)
 					
 					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 					playerBusy = false
@@ -814,13 +960,13 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				repeat Wait(0) until betCheckRecieved == true
 
 				RemoveEventHandler(eventHandler)
-
+				
 				if canBet then
 					TriggerServerEvent("BLACKJACK:ReceivedMove", "split")
 					
 					renderScaleform = false
 					renderHand = false
-
+					
 					local anim = "place_bet_small_split"
 					
 					if selectedBet > 27 then
@@ -833,7 +979,7 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 					NetworkStartSynchronisedScene(scene)
 					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 					
-					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, false, true)
+					TriggerServerEvent("BLACKJACK:SetPlayerBet", g_seat, closestChair, bet, selectedBet, false, true)
 					
 					Wait(math.floor(GetAnimDuration("anim_casino_b@amb@casino@games@blackjack@player", anim)*500))
 					playerBusy = false
