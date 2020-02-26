@@ -718,8 +718,6 @@ AddEventHandler("BLACKJACK:RequestBets", function(index)
 				bet = bet * 10
 			end
 			
-			DisplayHelpText("CURRENT BET:\n"..bet, -1)
-		
 			if IsControlJustPressed(1, 201) then
 				
 				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
@@ -845,8 +843,6 @@ AddEventHandler("BLACKJACK:RequestMove", function()
 				ScaleformMovieMethodAddParamPlayerNameString("Split")
 				EndScaleformMovieMethod()
 			end
-			
-			DisplayHelpText("YOUR HAND:\n"..handValue(hand))
 			
 			BeginScaleformMovieMethod(scaleform, "DRAW_INSTRUCTIONAL_BUTTONS")
 			EndScaleformMovieMethod()
